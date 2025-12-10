@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+    title: El Tenedor 4V API
+    description: |-
+        API para mantener una BBDD de Restaurante cercanos al Instituto 4V
+    contact:
+        email: miguel_goyena@cuatrovientos.org
+    version: 0.1.1
+servers:
+    - url: http://localhost:8000
+tags:
+    - name: restaurants
+      description: Everything about restaurants
+    - name: restaurants-types
+      description: Everything about the types of restaurantes
+paths:
+    /restaurants:
+        get:
+            tags:
+                - restaurants
+            summary: Finds All Restaurants
+            operationId: findAllRestaurants
+            parameters:
+                - name: tipo
+                  in: query
+                  description: Tipo de restaurante a filtrar
+                  required: false
+                  explode: true
+                  schema:
+                      type: string
+                      default: Italiano
+                      enum:
+                          - Italiano
+                          - Oriental
+                          - Latino
+            responses:
+                "200":
+                    description: Returns OK in all restaurants
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/RestauranteNew"
+                "400":
+                    description: Validation errors.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/ErrorResponse"
+                "500":
+                    description: Any problem in server
+
+        post:
+            tags:
+                - restaurants
+            summary: Add a new restaurant.
+            description: Add a new restaurant.
+            operationId: addRestaurant
+            requestBody:
+                description: Create a new restaurant in the El teneder 4V
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RestauranteNew"
+                required: true
+            responses:
+                "200":
+                    description: Returns OK in the restaurants
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                items:
+                                    $ref: "#/components/schemas/RestauranteNew"
+                "400":
+                    description: Validation errors.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/ErrorResponse"
+                "500":
+                    description: Any problem in server
+
+components:
+    schemas:
+        Restaurante:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                    example: 10
+                name:
+                    type: string
+                    example: La Taggliatella
+                rest-type:
+                    type: object
+                    $ref: "#/components/schemas/RestaurantType"
+        RestauranteNew:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: La Taggliatella
+                rest-type:
+                    type: integer
+                    format: int64
+                    example: 10
+        RestaurantType:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int64
+                    example: 10
+                name:
+                    type: string
+                    example: Oriental
+        ErrorResponse:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int64
+                    example: 10
+                description:
+                    type: string
+                    example: Error en el tipo de restaurante

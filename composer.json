@@ -1,8 +1,6 @@
 {
-    "name": "symfony/skeleton",
     "type": "project",
     "license": "proprietary",
-    "description": "A minimal Symfony project recommended to create bare bones applications",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -12,17 +10,11 @@
         "doctrine/doctrine-bundle": "^2.18",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.5",
-        "phpdocumentor/reflection-docblock": "^5.6",
-        "phpstan/phpdoc-parser": "^2.3",
         "symfony/console": "7.3.*",
         "symfony/dotenv": "7.3.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.3.*",
-        "symfony/property-access": "7.3.*",
-        "symfony/property-info": "7.3.*",
         "symfony/runtime": "7.3.*",
-        "symfony/serializer": "7.3.*",
-        "symfony/validator": "7.3.*",
         "symfony/yaml": "7.3.*"
     },
     "require-dev": {

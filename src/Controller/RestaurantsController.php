@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Restaurant;
 use App\Model\RespuestaErrorDTO;
 use App\Model\RestauranteDTO;
 use App\Model\RestaurantTypeDTO;
 use App\Model\RestaurantNewDTO;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,7 +20,7 @@ final class RestaurantsController extends AbstractController
     private $restaurantes = [];
     private $restaurantesItalianos = [];
 
-    public function __construct()
+    public function __construct(private EntityManagerInterface $entityManager)
     {
         $restauranteItaliano = new RestaurantTypeDTO(1, "Italiano");
         $restaurante1 = new RestauranteDTO(1, "La tagliatella", $restauranteItaliano);
@@ -40,19 +42,25 @@ final class RestaurantsController extends AbstractController
                 return new JsonResponse($errorMensaje, 400);
             }
 
-            // Recupero la información segun el tipo
-            if ($tipo == "Italiano") {
-                return $this->json($this->restaurantesItalianos);
-            } else {
-                return $this->json($this->restaurantes);
+            // Recupero la información de BBDD
+            $restaurantesBBDD = $this->entityManager
+                ->getRepository(Restaurant::class)
+                ->findAll();
+
+            // Convierto de Entidades a DTO
+            $restaurantesDTO = [];
+            foreach ($restaurantesBBDD as $restautanteEntidad) {
+                $restaurantesDTO[] = new RestauranteDTO($restautanteEntidad->getId(), $restautanteEntidad->getName(), null);
             }
+
+            return $this->json($restaurantesDTO);
         } catch (\Throwable $th) {
             $errorMensaje = new RespuestaErrorDTO(1000, "Error General");
             return new JsonResponse($errorMensaje, 500);
         }
     }
 
-    #[Route('/restaurants', name: 'post_restaurants', methods: ['POST'])]
+    #[Route('/restaurants', name: 'post_restaurants', methods:['POST'])]
     public function newRestaurants(Request $request): JsonResponse
     {
 
@@ -67,21 +75,23 @@ final class RestaurantsController extends AbstractController
             }
 
             // Hago validaciones pertinentes y me creo mi Objeto de Modelo RestauranteNewDTO
-            if ($data["name"] == null) {
+            if ($data["name"] == null){
                 $errorMensaje = new RespuestaErrorDTO(10, "El campo nombre es obligatorio");
                 return new JsonResponse($errorMensaje, 400);
             }
             $restauranteNuevo = new RestaurantNewDTO($data["name"], $data["res-type"]);
 
             // Inserto el objeto en nuestro array de restaurantes, HCoded 
-            $restauranteInsertado = new RestauranteDTO(sizeof($this->restaurantes) + 1, $restauranteNuevo->name,  new RestaurantTypeDTO($restauranteNuevo->resType, "Italiano"));
+            $restauranteInsertado = new RestauranteDTO(sizeof($this->restaurantes)+1, $restauranteNuevo->name,  new RestaurantTypeDTO($restauranteNuevo->resType,"Italiano"));
             array_push($this->restaurantes, $restauranteInsertado);
 
             //Contesto
-            return $this->json($this->restaurantes[sizeof($this->restaurantes) - 1]);
+            return $this->json($this->restaurantes[sizeof($this->restaurantes)-1]);
+
         } catch (\Throwable $th) {
             $errorMensaje = new RespuestaErrorDTO(1000, "Error General");
             return new JsonResponse($errorMensaje, 500);
         }
     }
+
 }

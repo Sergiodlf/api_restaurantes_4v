@@ -30,34 +30,47 @@ final class RestaurantsController extends AbstractController
         $this->restaurantesItalianos = [$restaurante1];
     }
 
-    #[Route('/restaurants', name: 'app_restaurants', methods: ['GET'])]
+    #[Route('/restaurants', name: 'app_restaurants', methods:['GET'])]
     public function getRestaurantes(#[MapQueryParameter()] ?string $tipo  = null): JsonResponse
     {
 
         try {
 
-            // Valido el tipo
-            if ($tipo != null && $tipo != "Italiano" && $tipo != "Oriental" && $tipo != "Latino") {
+            // Valido el tipo, que debe de ser un entero
+            if ($tipo != null && !$this->esEnteroPositivo($tipo)){
                 $errorMensaje = new RespuestaErrorDTO(10, "Validación tipo restaurante invalido");
                 return new JsonResponse($errorMensaje, 400);
             }
 
-            // Recupero la información de BBDD
-            $restaurantesBBDD = $this->entityManager
-                ->getRepository(Restaurant::class)
-                ->findAll();
+            // Si hay tipo entonces busco por tipo, sino busco cualquiera
+            if ($tipo != null){
+                $tipoEntero = (int)$tipo;
+                // Recupero la información de BBDD
+                $restaurantesBBDD = $this->entityManager
+                                            ->getRepository(Restaurant::class)
+                                            ->findByType($tipoEntero);
+            }
+            else{
+                // Recupero la información de BBDD
+                $restaurantesBBDD = $this->entityManager
+                                            ->getRepository(Restaurant::class)
+                                            ->findAll();
+            }
 
             // Convierto de Entidades a DTO
             $restaurantesDTO = [];
             foreach ($restaurantesBBDD as $restautanteEntidad) {
-                $restaurantesDTO[] = new RestauranteDTO($restautanteEntidad->getId(), $restautanteEntidad->getName(), null);
+                $restTypeDTO = new RestaurantTypeDTO($restautanteEntidad->getType()->getId(), $restautanteEntidad->getType()->getName());
+                $restaurantesDTO[] = new RestauranteDTO($restautanteEntidad->getId(), $restautanteEntidad->getName(), $restTypeDTO);
             }
 
             return $this->json($restaurantesDTO);
+
         } catch (\Throwable $th) {
             $errorMensaje = new RespuestaErrorDTO(1000, "Error General");
             return new JsonResponse($errorMensaje, 500);
         }
+
     }
 
     #[Route('/restaurants', name: 'post_restaurants', methods:['POST'])]
@@ -93,5 +106,17 @@ final class RestaurantsController extends AbstractController
             return new JsonResponse($errorMensaje, 500);
         }
     }
+
+    private function esEnteroPositivo(string $valor): bool {
+        // Comprueba que todos los caracteres sean dígitos
+        if (!ctype_digit($valor)) {
+            return false;
+        }
+
+        // Convierte a entero y verifica que sea mayor que 0
+        return (int)$valor > 0;
+    }
+
+
 
 }

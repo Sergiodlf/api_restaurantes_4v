@@ -23,16 +23,12 @@ paths:
             parameters:
                 - name: tipo
                   in: query
-                  description: Tipo de restaurante a filtrar
+                  description: Tipo de restaurante a filtrar, será un ID de los tipos
                   required: false
                   explode: true
                   schema:
-                      type: string
-                      default: Italiano
-                      enum:
-                          - Italiano
-                          - Oriental
-                          - Latino
+                      type: integer
+                      default: 1
             responses:
                 "200":
                     description: Returns OK in all restaurants
@@ -101,6 +97,40 @@ paths:
                                     $ref: "#/components/schemas/RestaurantType"
                 "500":
                     description: Any problem in server
+        post:
+            tags:
+                - restaurants-types
+            summary: Add a new restaurant type.
+            description: Add a new restaurant type.
+            operationId: addRestaurantType
+            requestBody:
+                description: Create a new restaurant type
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RestaurantTypeNew"
+                required: true
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/RestaurantType"
+                "400":
+                    description: Validation errors.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "409":
+                    description: Conflict - already exists
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "500":
+                    description: Any problem in server
 components:
     schemas:
         Restaurante:
@@ -113,7 +143,7 @@ components:
                 name:
                     type: string
                     example: La Taggliatella
-                rest-type:
+                res-type:
                     type: object
                     $ref: "#/components/schemas/RestaurantType"
         RestauranteNew:
@@ -122,17 +152,23 @@ components:
                 name:
                     type: string
                     example: La Taggliatella
-                rest-type:
+                res-type:
                     type: integer
                     format: int64
-                    example: 10
+                    example: 2
         RestaurantType:
             type: object
             properties:
                 id:
                     type: integer
                     format: int64
-                    example: 10
+                    example: 1
+                name:
+                    type: string
+                    example: Oriental
+        RestaurantTypeNew:
+            type: object
+            properties:
                 name:
                     type: string
                     example: Oriental
@@ -143,6 +179,6 @@ components:
                     type: integer
                     format: int64
                     example: 10
-                description:
+                descripcion:
                     type: string
                     example: Error en el tipo de restaurante

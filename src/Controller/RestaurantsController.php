@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Restaurant;
+use App\Entity\RestaurantType;
 use App\Model\RespuestaErrorDTO;
 use App\Model\RestauranteDTO;
 use App\Model\RestaurantTypeDTO;
@@ -82,29 +83,60 @@ final class RestaurantsController extends AbstractController
             $jsonBody = $request->getContent(); // Obtiene el cuerpo como texto
             $data = json_decode($jsonBody, true); // Lo decodifica a un array asociativo
 
+            /// VALIDACIONES
+
             // Manejo de errores si el JSON no es válido
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return $this->json(['error' => 'JSON inválido'], 400);
             }
 
-            // Hago validaciones pertinentes y me creo mi Objeto de Modelo RestauranteNewDTO
-            if ($data["name"] == null){
+            // Valido el nombre
+            if ($data["name"] == null) {
                 $errorMensaje = new RespuestaErrorDTO(10, "El campo nombre es obligatorio");
+                return new JsonResponse($errorMensaje, 400);
+            }
+            // Valido que el tipo de restaurante exista
+            if ($data["res-type"] == null) {
+                $errorMensaje = new RespuestaErrorDTO(11, "El campo res-type es obligatorio");
+                return new JsonResponse($errorMensaje, 400);
+            }
+
+            // Recupero la información de BBDD
+            $tipoRestaurantesBBDD = $this->entityManager
+                ->getRepository(RestaurantType::class)
+                ->find($data["res-type"]);
+            if ($tipoRestaurantesBBDD == null) {
+                $errorMensaje = new RespuestaErrorDTO(12, "El tipo de restaurante debe de existir");
                 return new JsonResponse($errorMensaje, 400);
             }
             $restauranteNuevo = new RestaurantNewDTO($data["name"], $data["res-type"]);
 
-            // Inserto el objeto en nuestro array de restaurantes, HCoded 
-            $restauranteInsertado = new RestauranteDTO(sizeof($this->restaurantes)+1, $restauranteNuevo->name,  new RestaurantTypeDTO($restauranteNuevo->resType,"Italiano"));
-            array_push($this->restaurantes, $restauranteInsertado);
 
-            //Contesto
-            return $this->json($this->restaurantes[sizeof($this->restaurantes)-1]);
+            /// Persistimos
+
+            // Creamos la entidad restaurante
+            $newRestaurantEntity = new Restaurant();
+            $newRestaurantEntity->setName($restauranteNuevo->name);
+            $newRestaurantEntity->setType($tipoRestaurantesBBDD);
+
+            // Le dices a Doctrine que quieres persistit el objeto,, todavia no hace nada
+            $this->entityManager->persist($newRestaurantEntity);
+
+            // Aqui es donde confirmas, asi tienes el concepto de transaccion!!!!
+            $this->entityManager->flush();
+
+
+
+            ///Monto Respuesta
+            $restTypeDTO = new RestaurantTypeDTO($newRestaurantEntity->getType()->getId(), $newRestaurantEntity->getType()->getName());
+            $restaurantesDTO = new RestauranteDTO($newRestaurantEntity->getId(), $newRestaurantEntity->getName(), $restTypeDTO);
+            return $this->json($restaurantesDTO);
 
         } catch (\Throwable $th) {
             $errorMensaje = new RespuestaErrorDTO(1000, "Error General");
             return new JsonResponse($errorMensaje, 500);
         }
+    
     }
 
     private function esEnteroPositivo(string $valor): bool {

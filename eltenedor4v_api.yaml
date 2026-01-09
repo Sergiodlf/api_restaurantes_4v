@@ -4,7 +4,7 @@ info:
     description: |-
         API para mantener una BBDD de Restaurante cercanos al Instituto 4V
     contact:
-        email: miguel_goyena@cuatrovientos.org
+        email: sergio4vientos@gmail.com
     version: 0.1.1
 servers:
     - url: http://localhost:8000

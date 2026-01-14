@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\RestaurantRepository;
+use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: RestaurantRepository::class)]
-class Restaurant
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -16,15 +16,15 @@ class Restaurant
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private ?string $email = null;
 
-    #[ORM\ManyToOne(inversedBy: 'restaurants')]
-    private ?RestaurantType $type = null;
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
 
     /**
      * @var Collection<int, Booking>
      */
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'restaurant')]
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'user')]
     private Collection $bookings;
 
     public function __construct()
@@ -37,6 +37,18 @@ class Restaurant
         return $this->id;
     }
 
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
@@ -45,18 +57,6 @@ class Restaurant
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getType(): ?RestaurantType
-    {
-        return $this->type;
-    }
-
-    public function setType(?RestaurantType $type): static
-    {
-        $this->type = $type;
 
         return $this;
     }
@@ -73,7 +73,7 @@ class Restaurant
     {
         if (!$this->bookings->contains($booking)) {
             $this->bookings->add($booking);
-            $booking->setRestaurant($this);
+            $booking->setUser($this);
         }
 
         return $this;
@@ -83,12 +83,11 @@ class Restaurant
     {
         if ($this->bookings->removeElement($booking)) {
             // set the owning side to null (unless already changed)
-            if ($booking->getRestaurant() === $this) {
-                $booking->setRestaurant(null);
+            if ($booking->getUser() === $this) {
+                $booking->setUser(null);
             }
         }
 
         return $this;
     }
-
 }

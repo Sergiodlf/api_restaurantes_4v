@@ -1,184 +1,218 @@
 openapi: 3.0.3
 info:
-    title: El Tenedor 4V API
-    description: |-
-        API para mantener una BBDD de Restaurante cercanos al Instituto 4V
-    contact:
-        email: sergio4vientos@gmail.com
-    version: 0.1.1
+  title: El Tenedor 4V API
+  description: |-
+    API para mantener una BBDD de Restaurante cercanos al Instituto 4V
+  contact:
+    email: miguel_goyena@cuatrovientos.org
+  version: 0.1.1
 servers:
-    - url: http://localhost:8000
+  - url: http://localhost:8000
 tags:
-    - name: restaurants
-      description: Everything about restaurants
-    - name: restaurants-types
-      description: Everything about the types of restaurantes
+  - name: restaurants
+    description: Everything about restaurants
+  - name: restaurants-types
+    description: Everything about the types of restaurantes
+  - name: bookings
+    description: Everything about bookings of restaurants by users
 paths:
-    /restaurants:
-        get:
-            tags:
-                - restaurants
-            summary: Finds All Restaurants
-            operationId: findAllRestaurants
-            parameters:
-                - name: tipo
-                  in: query
-                  description: Tipo de restaurante a filtrar, será un ID de los tipos
-                  required: false
-                  explode: true
-                  schema:
-                      type: integer
-                      default: 1
-            responses:
-                "200":
-                    description: Returns OK in all restaurants
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/Restaurante"
-                "400":
-                    description: Validation errors.
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/ErrorResponse"
-                "500":
-                    description: Any problem in server
-        post:
-            tags:
-                - restaurants
-            summary: Add a new restaurant.
-            description: Add a new restaurant.
-            operationId: addRestaurant
-            requestBody:
-                description: Create a new restaurant in the El teneder 4V
-                content:
-                    application/json:
-                        schema:
-                            $ref: "#/components/schemas/RestauranteNew"
-                required: true
-            responses:
-                "200":
-                    description: Returns OK in the restaurants
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                items:
-                                    $ref: "#/components/schemas/Restaurante"
-                "400":
-                    description: Validation errors.
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/ErrorResponse"
-                "500":
-                    description: Any problem in server
-    /restaurant-types:
-        get:
-            tags:
-                - restaurants-types
-            summary: Finds All Restaurant Types
-            operationId: findAllRestaurantTypes
-            responses:
-                "200":
-                    description: Returns OK in all restaurant types
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/RestaurantType"
-                "500":
-                    description: Any problem in server
-        post:
-            tags:
-                - restaurants-types
-            summary: Add a new restaurant type.
-            description: Add a new restaurant type.
-            operationId: addRestaurantType
-            requestBody:
-                description: Create a new restaurant type
-                content:
-                    application/json:
-                        schema:
-                            $ref: "#/components/schemas/RestaurantTypeNew"
-                required: true
-            responses:
-                "201":
-                    description: Created
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/RestaurantType"
-                "400":
-                    description: Validation errors.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                "409":
-                    description: Conflict - already exists
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ErrorResponse"
-                "500":
-                    description: Any problem in server
+  /restaurants:
+    get:
+      tags:
+        - restaurants
+      summary: Finds All Restaurants
+      operationId: findAllRestaurants
+      parameters:
+        - name: tipo
+          in: query
+          description: Tipo de restaurante a filtrar, será un ID de los tipos
+          required: false
+          explode: true
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Returns OK in all restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Restaurante' 
+        '400':
+          description: Validation errors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorResponse'   
+        '500':
+          description: Any problem in server
+    post:
+      tags:
+        - restaurants
+      summary: Add a new restaurant.
+      description: Add a new restaurant.
+      operationId: addRestaurant
+      requestBody:
+        description: Create a new restaurant in the El teneder 4V
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestauranteNew'
+        required: true
+      responses:
+        '200':
+          description: Returns OK in the restaurants
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Restaurante' 
+        '400':
+          description: Validation errors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorResponse'   
+        '500':
+          description: Any problem in server
+  /bookings:
+    post:
+      tags:
+        - bookings
+      summary: Add a new booking for a user and restaurant
+      description: Add a new booking for a user and restaurant
+      operationId: addBooking
+      requestBody:
+        description: A new Booking information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingNew'
+        required: true
+      responses:
+        '200':
+          description: Returns OK in the booking
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Booking' 
+        '400':
+          description: Validation errors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorResponse'   
+        '500':
+          description: Any problem in server
+  /restaurant-types:
+    get:
+      tags:
+        - restaurants-types
+      summary: Finds All Restaurant Types
+      operationId: findAllRestaurantTypes
+      responses:
+        '200':
+          description: Returns OK in all restaurant types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RestaurantType' 
+        '500':
+          description: Any problem in server
 components:
-    schemas:
-        Restaurante:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: int64
-                    example: 10
-                name:
-                    type: string
-                    example: La Taggliatella
-                res-type:
-                    type: object
-                    $ref: "#/components/schemas/RestaurantType"
-        RestauranteNew:
-            type: object
-            properties:
-                name:
-                    type: string
-                    example: La Taggliatella
-                res-type:
-                    type: integer
-                    format: int64
-                    example: 2
-        RestaurantType:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: int64
-                    example: 1
-                name:
-                    type: string
-                    example: Oriental
-        RestaurantTypeNew:
-            type: object
-            properties:
-                name:
-                    type: string
-                    example: Oriental
-        ErrorResponse:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    format: int64
-                    example: 10
-                descripcion:
-                    type: string
-                    example: Error en el tipo de restaurante
+  schemas:
+    Restaurante:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: La Taggliatella
+        rest-type:
+          type: object
+          $ref: '#/components/schemas/RestaurantType'
+    RestauranteNew:
+      type: object
+      properties:
+        name:
+          type: string
+          example: La Taggliatella
+        rest-type:
+          type: integer
+          format: int64
+          example: 10
+    RestaurantType:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Oriental
+    BookingNew:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: 2023-11-07T19:20:30+01:00
+        user:
+          type: integer
+          format: int64
+          example: 2
+        restaurant:
+          type: integer
+          format: int64
+          example: 16
+        people:
+          type: integer
+          format: int64
+          example: 4
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        date:
+          type: string
+          format: date
+          example: 2023-11-07T19:20:30+01:00
+        user:
+          type: integer
+          format: int64
+          example: 2
+        restaurant:
+          type: object
+          $ref: '#/components/schemas/Restaurante' 
+        people:
+          type: integer
+          format: int64
+          example: 4
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+          example: 10
+        description:
+          type: string
+          example: Error en el tipo de restaurante

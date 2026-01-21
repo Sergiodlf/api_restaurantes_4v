@@ -110,4 +110,23 @@ final class BookingsController extends AbstractController
             return new JsonResponse($errorMensaje, 500);
         }
     }
+
+    #[Route('/bookings', name: 'get_bookings', methods: ['GET'])]
+    public function getBookings(): JsonResponse
+    {
+        try {
+            $bookings = $this->entityManager->getRepository(Booking::class)->findAll();
+            $format = 'Y-m-d\TH:i:sP';
+            $bookingDTOs = array_map(function($booking) use ($format) {
+                $restTypeDTO = new RestaurantTypeDTO($booking->getRestaurant()->getType()->getId(), $booking->getRestaurant()->getType()->getName());
+                $restaurantesDTO = new RestauranteDTO($booking->getRestaurant()->getId(), $booking->getRestaurant()->getName(), $restTypeDTO);
+                $userDTO = new UserDTO($booking->getUser()->getId(), $booking->getUser()->getName(), $booking->getUser()->getEmail());
+                return new BookingDTO($booking->getId(), $booking->getPeople(), $booking->getDate()->format($format), $restaurantesDTO, $userDTO);
+            }, $bookings);
+            return $this->json($bookingDTOs);
+        } catch (\Throwable $th) {
+            $errorMensaje = new RespuestaErrorDTO(1000, "Error General");
+            return new JsonResponse($errorMensaje, 500);
+        }
+    }
 }
